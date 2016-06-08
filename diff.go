@@ -60,9 +60,11 @@ func (w diffWriter) diff(av, bv reflect.Value) {
 
 	// numeric types, including bool
 	if at.Kind() < reflect.Array {
-		a, b := av.Interface(), bv.Interface()
-		if a != b {
-			w.printf("%#v != %#v", a, b)
+		if av.CanInterface() && bv.CanInterface() {
+			a, b := av.Interface(), bv.Interface()
+			if a != b {
+				w.printf("%#v != %#v", a, b)
+			}
 		}
 		return
 	}
@@ -75,9 +77,9 @@ func (w diffWriter) diff(av, bv reflect.Value) {
 		}
 	case reflect.Ptr:
 		switch {
-		case av.IsNil() && !bv.IsNil():
+		case av.IsNil() && !bv.IsNil() && bv.CanInterface():
 			w.printf("nil != %v", bv.Interface())
-		case !av.IsNil() && bv.IsNil():
+		case !av.IsNil() && bv.IsNil() && av.CanInterface():
 			w.printf("%v != nil", av.Interface())
 		case !av.IsNil() && !bv.IsNil():
 			w.diff(av.Elem(), bv.Elem())
